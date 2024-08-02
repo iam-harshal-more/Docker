@@ -1,0 +1,73 @@
+version: '3'
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./html:/usr/share/nginx/html
+    networks:
+      - webnet
+
+  app:
+    image: myapp:latest
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app:/app
+    environment:
+      - NODE_ENV=production
+    depends_on:snipping
+      - db
+    networks:
+      - webnet
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - webnet
+
+volumes:
+  db-data:
+
+networks:
+  webnet:
+
+
+**Docker file Explanation**
+
+• version: Specifies the version of the Docker Compose file format. Here, '3' is used which is compatible with most features and a good default.
+• services: This section defines the various services that make up your application. Each service runs one image and is an isolated container.
+•	web: This service uses the Nginx web server.
+•	image: Specifies the image to use for this service. nginx:latest uses the latest version of the Nginx image.
+•	ports: Maps the host's port 80 to the container's port 80.
+•	volumes: Mounts the host directory ./html to the container directory /usr/share/nginx/html. This allows you to serve your web content from the local directory.
+•	networks: Connects this service to the webnet network.
+•	app: This service represents your application.
+•	image: Specifies the image to use. myapp:latest is a custom image for your application.
+•	build: This specifies that the image should be built from the Dockerfile in the ./app directory.
+•	ports: Maps the host's port 3000 to the container's port 3000.
+•	volumes: Mounts the host directory ./app to the container directory /app. This is useful for development as changes in the local directory will be reflected in the container.
+•	environment: Sets environment variables inside the container. Here, NODE_ENV=production sets the environment to production.
+•	depends_on: Specifies dependencies between services. This ensures that the db service is started before the app service.
+•	networks: Connects this service to the webnet network.
+•	db: This service uses the PostgreSQL database.
+•	image: Specifies the image to use for this service. postgres:latest uses the latest version of the PostgreSQL image.
+•	environment: Sets environment variables for PostgreSQL configuration.
+•	POSTGRES_DB: The name of the database to create.
+•	POSTGRES_USER: The username for accessing the database.
+•	POSTGRES_PASSWORD: The password for the specified user.
+•	volumes: Mounts a named volume db-data to the container directory /var/lib/postgresql/data. This persists the database data.
+•	networks: Connects this service to the webnet network.
+• volumes: This section defines named volumes that can be shared and reused among services. Here, db-data is a named volume used by the db service.
+• networks: This section defines custom networks. Here, webnet is a network that all services are connected to, allowing them to communicate with each other.
+
